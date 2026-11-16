@@ -1,0 +1,7 @@
+# 마이그레이션 임시 스크립트
+*.py
+.clasp.json
+appsscript.json
+*.bak
+기존코드/
+20260730/

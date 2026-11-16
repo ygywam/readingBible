@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>2026 성경 대행진 - 회정교회</title>
+  
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap');
+    
+    :root { --primary-color: #1a237e; --bg-color: #f4faff; }
+
+    body { font-family: 'Gamja Flower', sans-serif; background-color: var(--bg-color); margin: 0; padding: 10px; font-size: 18px; color: #333; transition: background-color 0.5s ease, font-size 0.3s ease; }
+    h1, h2 { text-align: center; color: var(--primary-color); transition: color 0.5s; }
+    .welcome-header { text-align: center; color: var(--primary-color); margin: 10px 0 20px 0; font-size: clamp(1.4rem, 5vw, 2.2rem); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+    
+    .tab-container { 
+      display: flex; justify-content: space-between; gap: 5px; 
+      position: sticky; top: 0; z-index: 100; 
+      background-color: var(--bg-color); 
+      padding: 15px 0; margin-bottom: 5px;
+      transition: background-color 0.5s ease;
+    }
+    .tab-button { flex: 1; padding: 10px 2px; border: none; background: #e0e0e0; cursor: pointer; font-family: 'Gamja Flower'; font-size: clamp(0.85rem, 3.2vw, 1.2rem); white-space: nowrap; border-radius: 12px; color: #555; font-weight: bold; transition: 0.2s; }
+    .tab-button.active { background: var(--primary-color); color: white; transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .admin-tab-btn.active { background: #d32f2f; color: white; }
+    
+    .content-area { display: none; animation: fadeIn 0.5s; }
+    .content-area.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .global-top-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .font-btn-group { display: flex; gap: 5px; }
+    .font-btn { padding: 5px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; font-family: 'Gamja Flower'; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .font-btn:active { background: #bdbdbd; }
+    
+    .logout-bar { text-align: right; margin-bottom: 10px; }
+    .logout-btn { padding: 5px 12px; background: #9e9e9e; color: white; border: none; border-radius: 8px; font-family: 'Gamja Flower'; cursor: pointer; }
+
+    .login-container { max-width: 400px; margin: 20px auto 30px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .login-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e0e0e0; font-family: 'Gamja Flower'; font-size: 1.1em; margin-bottom:15px; box-sizing: border-box; text-align: center; }
+    .login-btn { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; font-family: 'Gamja Flower'; transition: background 0.5s; }
+
+    .grand-total-box { background: linear-gradient(135deg, var(--primary-color), #4caf50); color: white; padding: 15px; border-radius: 15px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: fadeIn 1s; }
+    .grand-total-number { font-size: 2.5em; font-weight: bold; margin: 5px 0; color: #ffeb3b; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); font-family: sans-serif; }
+    .grand-total-text { font-size: 1.1em; opacity: 0.9; font-weight:bold; }
+
+    .notice-box { background-color: #fff9c4; border: 2px solid #fbc02d; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: left; animation: fadeIn 0.5s; }
+    .notice-title { margin-top: 0; color: #d32f2f; font-size: 1.2em; display: flex; align-items: center; gap: 5px; }
+    .notice-text { margin-bottom: 0; font-size: 0.95em; color: #333; line-height: 1.5; }
+
+    .group-lane-box { transition: background 0.2s; border-radius: 10px; padding: 5px; cursor: pointer; }
+    .group-lane-box:hover { background: rgba(0,0,0,0.03); }
+
+    .bottom-info-area { text-align: center; margin-top: 20px; animation: fadeIn 1s; }
+    .warning-msg { color: #e53935; font-size: 0.9em; margin-bottom: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px;}
+    .theme-palette { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .theme-circle { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .theme-circle:active { transform: scale(0.9); }
+    .theme-circle.selected { border-color: #333; transform: scale(1.15); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .footer-credit { color: #9e9e9e; font-size: 0.85em; font-family: sans-serif; letter-spacing: 0.5px; margin-bottom: 20px;}
+
+    .book-card { background: white; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    .book-header { padding: 15px 20px; font-size: 1.2em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #fff; transition: background 0.2s; }
+    .book-header:active { background: #f0f0f0; }
+    .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; padding: 15px; background: #fafafa; border-top: 1px dashed #eee; }
+    .chapter-box { height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: 0.2s; border: 2px solid #ddd; background: white; color: #aaa; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .chapter-box:active { transform: scale(0.9); }
+    .book-progress-text { font-size: 0.85em; color: #888; font-weight: normal; }
+
+    .track-container { background: white; padding: 20px 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .lane { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px dashed #eee; padding-bottom: 20px; }
+    .lane:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .lane-center { flex: 1; position: relative; height: 40px; margin: 0 15px; display: flex; align-items: center; }
+    .track-bg-line { width: calc(100% - 15px); height: 8px; background: #eee; border-radius: 4px; position: absolute; }
+    .track-fill-bar { height: 8px; border-radius: 4px; position: absolute; z-index: 1; transition: width 1.5s; }
+    .horse-wrapper { position: absolute; z-index: 10; transition: left 1.5s; }
+    .horse-icon { font-size: 1.6em; transform: translate(-40%, -55%) scaleX(-1); display: block; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2)); }
+    
+    .rank-table { width: 100%; border-collapse: collapse; }
+    .rank-cell { padding: 15px 5px; border-bottom: 1px dashed #eee; }
+    .rank-row:last-child .rank-cell { border-bottom: none; }
+    .indiv-track-area { position: relative; height: 30px; margin-top: 5px; margin-right: 25px; }
+    .indiv-track-bg { width: 100%; height: 8px; background: #eee; border-radius: 4px; position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+    .indiv-track-fill { height: 8px; border-radius: 4px; position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 1; transition: width 1.5s ease-in-out; }
+    .indiv-horse-wrapper { position: absolute; top: 50%; transform: translateY(-50%); width: 0; height: 0; transition: left 1.5s ease-in-out; z-index: 10; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; animation: fadeIn 0.3s; padding: 20px; box-sizing: border-box;}
+    .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 20px; padding: 25px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow-y: auto; position: relative; }
+    .modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.5em; cursor: pointer; color: #888; transition: 0.2s; background: none; border: none; }
+
+    .devotion-card { background: white; border-radius: 15px; padding: 18px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.06); border: 1px solid #eef2f5; }
+    .devotion-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 10px; margin-bottom: 10px; }
+    .devotion-user { font-weight: bold; font-size: 1.15em; color: #222; }
+    .devotion-team { font-size: 0.85em; color: #777; font-weight: normal; }
+    .devotion-range { font-size: 0.9em; color: var(--primary-color); background: #eef2ff; padding: 4px 8px; border-radius: 6px; font-weight: bold; }
+    .devotion-body { font-size: 1.05em; color: #444; line-height: 1.6; white-space: pre-wrap; margin-bottom: 12px; }
+    .devotion-footer { display: flex; justify-content: flex-end; align-items: center; }
+    .like-btn { background: #f5f5f5; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-family: 'Gamja Flower'; cursor: pointer; font-size: 1em; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+    .like-btn.liked { background: #ffebee; border-color: #ef5350; color: #d32f2f; }
+    .like-heart { font-size: 1.2em; filter: grayscale(100%); }
+    .like-btn.liked .like-heart { filter: grayscale(0%); }
+    .devotion-input-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 25px; border: 2px solid var(--primary-color); }
+    .devotion-textarea { width: 100%; height: 80px; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: 'Gamja Flower'; font-size: 1.05em; box-sizing: border-box; resize: none; margin-top: 10px; }
+
+    .editor-toolbar { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
+    .editor-toolbar button { padding: 4px 8px; font-family: 'Gamja Flower'; border-radius: 4px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    .editor-area { min-height: 80px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #fafafa; font-size: 0.95em; line-height: 1.4; outline: none; }
+
+    #toast-container {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      width: 90%;
+      max-width: 420px;
+    }
+
+    .custom-toast {
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.98);
+      border-left: 5px solid var(--primary-color);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.05);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: #333;
+      font-family: 'Gamja Flower', sans-serif;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    .custom-toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .custom-toast.hide { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    .toast-icon { font-size: 1.4em; flex-shrink: 0; }
+    .toast-message { flex: 1; word-break: break-word; }
+
+    .custom-toast.error { border-left-color: #e53935; }
+    .custom-toast.success { border-left-color: #4caf50; }
+    .custom-toast.warning { border-left-color: #ff9800; }
+    .custom-toast.celebrate { border-left-color: #fbc02d; background: linear-gradient(135deg, #ffffff, #fffde7); }
+  </style>
+</head>
+<body>
+
+  <div class="global-top-bar">
+    <div class="font-btn-group">
+      <button class="font-btn" onclick="changeFontSize(2)">크게▲</button>
+      <button class="font-btn" onclick="changeFontSize(-2)">작게▼</button>
+    </div>
+  </div>
+
+  <div id="login-screen">
+    <div class="login-container">
+      <h2 id="login-title">⛪ 성경 대행진 로그인</h2>
+
+      <div class="grand-total-box" id="grand-total-box" style="display:none;">
+        <div class="grand-total-text">🙏 성도님들이 함께 읽은 말씀</div>
+        <div class="grand-total-number" id="grand-total-number">0장</div>
+      </div>
+
+      <div id="dynamic-notice-container"></div>
+
+      <input type="text" id="uName" class="login-input" placeholder="이름">
+      <input type="text" id="uTeam" class="login-input" placeholder="소그룹 명 (예: 인내)" style="display:none;">
+      <input type="password" id="uPw" class="login-input" placeholder="비밀번호">
+      <button id="action-btn" class="login-btn" onclick="handleAuth()">로그인</button>
+      <p id="toggle-link" style="text-align:center; margin-top:15px; color:#666; cursor:pointer; text-decoration:underline;" onclick="toggleMode()">처음이신가요? [가입하기]</p>
+    </div>
+
+    <div style="max-width:450px; margin:0 auto 20px auto;">
+      <h3 style="text-align:center; color:var(--primary-color); margin-bottom:15px;">💬 오늘의 묵상 나눔</h3>
+      <div id="login-devotion-list"></div>
+    </div>
+
+    <div class="bottom-info-area">
+      <div class="warning-msg">⚠️ 새로고침하면 로그아웃됩니다 — 비밀번호를 기억해 두세요!</div>
+      <div class="theme-palette" id="theme-palette">
+        <div class="theme-circle" data-primary="#1a237e" style="background:#1a237e;" onclick="setTheme('#1a237e', '#f4faff', this)"></div>
+        <div class="theme-circle" data-primary="#2e7d32" style="background:#2e7d32;" onclick="setTheme('#2e7d32', '#f1f8e9', this)"></div>
+        <div class="theme-circle" data-primary="#880e4f" style="background:#880e4f;" onclick="setTheme('#880e4f', '#fce4ec', this)"></div>
+        <div class="theme-circle" data-primary="#4e342e" style="background:#4e342e;" onclick="setTheme('#4e342e', '#efebe9', this)"></div>
+        <div class="theme-circle" data-primary="#00695c" style="background:#00695c;" onclick="setTheme('#00695c', '#e0f2f1', this)"></div>
+        <div class="theme-circle" data-primary="#212121" style="background:#212121;" onclick="setTheme('#212121', '#f5f5f5', this)"></div>
+      </div>
+      <div class="footer-credit">
+        Made by 조용희(회정교회) 
+        <a href="https://www.instagram.com/record_tuner/" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: bold; transition: color 0.5s;">@record_tuner</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-app" style="display:none;">
+    <div class="logout-bar"><button class="logout-btn" onclick="location.reload()">로그아웃 🔓</button></div>
+    
+    <h1 class="welcome-header"><span id="welcome-msg"></span></h1>
+    
+    <div class="tab-container">
+      <button class="tab-button active" onclick="switchTab('devotion')">묵상나눔💬</button>
+      <button class="tab-button" onclick="switchTab('mybible')">내 성경📖</button>
+      <button class="tab-button" onclick="switchTab('track')">대행진 트랙🐎</button>
+      <button class="tab-button" onclick="switchTab('guide')">안내💡</button>
+      <button id="admin-tab-btn" class="tab-button admin-tab-btn" onclick="switchTab('admin')" style="display:none;">관리자⚙️</button>
+    </div>
+
+    <!-- 묵상나눔 탭 -->
+    <div id="devotion-tab" class="content-area active">
+      <div class="devotion-input-box">
+        <label style="font-weight:bold; color:var(--primary-color); font-size:1.1em;">
+          ✨ 오늘 읽은 하나님의 말씀 중 인상깊었던 구절이나 내용을 나누어주세요
+        </label>
+        <textarea id="devotion-text" class="devotion-textarea" placeholder="묵상한 내용을 간략히 적어주세요. (작성하지 않더라도 오늘 성경 읽은 범위가 함께 나누어집니다)"></textarea>
+        <button onclick="submitDevotion()" style="width:100%; margin-top:10px; background:var(--primary-color); color:white; border:none; padding:10px; border-radius:10px; font-family:'Gamja Flower'; font-size:1.1em; cursor:pointer;">
+          오늘의 묵상 공유하기 🕊️
+        </button>
+      </div>
+
+      <h3 style="color:var(--primary-color); margin-left:5px;">📖 성도들의 오늘 묵상 나눔</h3>
+      <div id="app-devotion-list"></div>
+    </div>
+
+    <!-- 내 성경 탭 -->
+    <div id="mybible-tab" class="content-area">
+      <p style="text-align:center; color:#e53935; margin-top:-5px; margin-bottom:15px; font-size:0.9em; font-weight:bold;">👇 읽은 곳까지 누르면 한 번에 채워집니다!</p>
+      <div id="loading-bible" style="text-align:center; padding:30px;">기록을 불러오고 있습니다... ⏳</div>
+      <div id="my-bible-container"></div>
+    </div>
+
+    <!-- 대행진 트랙 탭 -->
+    <div id="track-tab" class="content-area">
+      <h3 style="color:var(--primary-color); margin-left:5px; transition: color 0.5s;">🏁 소그룹 대항전</h3>
+      <p style="font-size:0.85em; color:#666; margin-top:-15px; margin-left:5px;">💡 소그룹을 클릭하면 그룹원들의 순위를 볼 수 있습니다.</p>
+      <div id="group-track" class="track-container"></div>
+      
+      <h3 style="color:var(--primary-color); margin-left:5px; margin-top:30px; transition: color 0.5s;">🏆 개인별 순위</h3>
+      <div id="individual-list-container" class="track-container" style="padding: 10px 15px;"></div>
+    </div>
+
+    <!-- 안내 탭 -->
+    <div id="guide-tab" class="content-area">
+      <div class="guide-box">
+        
+        <div class="guide-section" style="margin-bottom: 20px;">
+          <div class="guide-title" style="font-size: 1.2em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: 10px;"><span class="guide-icon">🚀</span> 초간편 원터치 기록! (내 성경)</div>
+          <div class="guide-text">
+            <ul>
+              <li><b style="color:var(--primary-color)">일괄 입력:</b> 45장까지 읽으셨다면 <b>45장 빈칸만 한 번 톡!</b> 누르세요. 1장부터 45장까지 한 번에 싹 칠해집니다.</li>
+              <li><b style="color:#d32f2f">개별 수정:</b> 실수로 46장까지 칠하셨나요? <b>색칠된 46장 칸을 다시 누르면</b> 그 칸만 지워집니다.</li>
+              <li><b style="color:#4caf50">완독 축하:</b> 각 성경을 끝까지 다 읽으시면 축하 메시지와 함께 다음 독차(레벨)로 넘어갑니다!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="guide-section" style="margin-bottom: 20px;">
+          <div class="guide-title" style="font-size: 1.2em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: 10px;"><span class="guide-icon">💬</span> 묵상 나눔 기능</div>
+          <div class="guide-text">
+            <ul>
+              <li>오늘 읽은 말씀 중 <b>은혜받은 구절이나 생각</b>을 자유롭게 나누어 보세요.</li>
+              <li>내용을 적지 않고 <b style="color:var(--primary-color)">'오늘의 묵상 공유하기'</b> 버튼만 눌러도, 오늘 내가 읽은 성경 범위가 성도들에게 공유되어 서로 도전이 됩니다.</li>
+              <li>다른 성도님의 묵상에 <b style="color:#e53935">❤️ 좋아요</b>를 눌러 격려해 주세요!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="guide-section" style="margin-bottom: 20px;">
+          <div class="guide-title" style="font-size: 1.2em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: 10px;"><span class="guide-icon">🏁</span> 대행진 트랙 & 순위</div>
+          <div class="guide-text">
+            <ul>
+              <li><b style="color:#f57f17">소그룹 랭킹:</b> 대행진 트랙에서 <b style="color:var(--primary-color)">우리 소그룹을 클릭</b>하면, 소그룹 식구들끼리의 순위 팝업이 뜹니다.</li>
+              <li><b style="color:#1a237e">개인 순위:</b> 전체 성도님들의 성경 읽기 순위를 확인할 수 있습니다. 함께 선의의 경쟁을 해보세요!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="guide-section" style="margin-bottom: 20px;">
+          <div class="guide-title" style="font-size: 1.2em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: 10px;"><span class="guide-icon">🏆</span> 다독 달성 아이콘 안내</div>
+          <div class="guide-text" style="font-size: 0.95em;">
+            <p style="margin-top:0; color:#666; margin-bottom: 10px;">성경을 여러 번 읽을 때마다 트랙의 아이콘과 색상이 변합니다. 20독 이상을 향해 달려보세요!</p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+              <div><span style="color:#4caf50">1독:</span> 🐎 (말)</div>
+              <div><span style="color:#ab47bc">2독:</span> 🦄 (유니콘)</div>
+              <div><span style="color:#ffb300">3독:</span> 🦅 (독수리)</div>
+              <div><span style="color:#e53935">4독:</span> 🦁 (사자)</div>
+              <div><span style="color:#1e88e5">5독:</span> 👑 (왕관)</div>
+              <div><span style="color:#03a9f4">6독:</span> 🕊️ (비둘기)</div>
+              <div><span style="color:#e91e63">7독:</span> 🌈 (무지개)</div>
+              <div><span style="color:#00acc1">8독:</span> 🌟 (별)</div>
+              <div><span style="color:#ff5722">9독:</span> 🔥 (불꽃)</div>
+              <div><span style="color:#1a237e">10독:</span> 💎 (보석)</div>
+              <div><span style="color:#7b1fa2">11독:</span> 🍇 (포도)</div>
+              <div><span style="color:#33691e">12독:</span> 🌳 (나무)</div>
+              <div><span style="color:#00838f">13독:</span> ⛵ (배)</div>
+              <div><span style="color:#37474f">14독:</span> ⚓ (닻)</div>
+              <div><span style="color:#9e9e9e">15독:</span> 🛡️ (방패)</div>
+              <div><span style="color:#b71c1c">16독:</span> ⚔️ (검)</div>
+              <div><span style="color:#f57f17">17독:</span> 🎺 (나팔)</div>
+              <div><span style="color:#ef6c00">18독:</span> ☀️ (해)</div>
+              <div><span style="color:#5d4037">19독:</span> 📖 (성경)</div>
+              <div><span style="color:#ffea00">20독~:</span> 🏆 (트로피)</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 관리자 탭 -->
+    <div id="admin-tab" class="content-area">
+      <div class="track-container" style="margin-bottom: 25px;">
+        <h3 style="color:#d32f2f; margin-top:0;">📢 공지사항 작성</h3>
+        <p style="font-size:0.9em; color:#666; margin-bottom:10px;">로그인 화면에 띄울 공지사항을 에디터로 작성하세요.</p>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <select id="admin-notice-status" class="login-input" style="width:120px; margin:0; padding:10px;">
+            <option value="ON">ON 노출</option><option value="OFF">OFF 숨김</option>
+          </select>
+          <input type="text" id="admin-notice-title" class="login-input" placeholder="공지 제목" style="flex:1; margin:0; padding:10px; text-align:left;">
+        </div>
+        <div class="editor-toolbar">
+          <button type="button" onclick="formatText('bold')" style="font-weight:bold;">굵게</button>
+          <button type="button" onclick="formatText('underline')" style="text-decoration:underline;">밑줄</button>
+          <input type="color" onchange="formatText('foreColor', this.value)" title="글자색">
+          <select onchange="formatText('fontSize', this.value)">
+            <option value="3">보통</option><option value="4">크게</option><option value="5">아주크게</option>
+          </select>
+        </div>
+        <div id="admin-notice-content" class="editor-area" contenteditable="true" placeholder="여기에 내용을 입력하세요..."></div>
+        <button onclick="saveAdminNotice()" style="width:100%; margin-top:15px; background:#d32f2f; color:white; border:none; padding:12px; border-radius:10px; font-family:'Gamja Flower'; font-size:1.1em; cursor:pointer;">공지사항 저장하기</button>
+      </div>
+
+      <div class="track-container" style="margin-bottom: 25px;">
+        <h3 style="color:#1a237e; margin-top:0;">➕ 새 성도 등록</h3>
+        <div style="display: flex; gap: 5px;">
+          <input type="text" id="new-member-name" class="login-input" placeholder="이름" style="margin-bottom:0; flex:1; padding:10px;">
+          <input type="text" id="new-member-team" class="login-input" placeholder="소그룹" style="margin-bottom:0; flex:1; padding:10px;">
+          <button onclick="addNewMember()" style="background:#1a237e; color:white; border:none; padding:10px 15px; border-radius:10px; font-family:'Gamja Flower'; font-size: 1.1em; cursor:pointer; white-space:nowrap;">추가</button>
+        </div>
+      </div>
+
+      <div class="track-container">
+        <h3 style="color:#d32f2f; margin-top:0;">👨‍🔧 성도 계정 관리</h3>
+        <div style="margin-bottom:15px;">
+          <input type="text" id="admin-search" class="login-input" placeholder="이름 검색" onkeyup="searchAdminList()" style="margin:0; width:100%; padding:10px;">
+        </div>
+        <div id="admin-member-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 소그룹 순위 모달 -->
+  <div id="team-modal" class="modal-overlay" onclick="closeTeamModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="document.getElementById('team-modal').style.display='none'">✖</button>
+      <h3 class="modal-title" id="team-modal-title">소그룹 순위</h3>
+      <div id="team-modal-list" style="margin-top: 15px;"></div>
+    </div>
+  </div>
+
+  <!-- 커스텀 확인(Confirm) 모달 -->
+  <div id="confirm-modal" class="modal-overlay" onclick="closeConfirmModal(false)">
+    <div class="modal-content" style="max-width:380px; text-align:center; padding:25px;" onclick="event.stopPropagation()">
+      <div id="confirm-icon" style="font-size:2.5em; margin-bottom:10px;">❓</div>
+      <div id="confirm-message" style="font-size:1.2em; color:#333; margin-bottom:20px; line-height:1.5;"></div>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="confirm-cancel-btn" style="flex:1; padding:10px; background:#e0e0e0; color:#444; border:none; border-radius:10px; font-family:'Gamja Flower'; font-size:1.1em; cursor:pointer;" onclick="closeConfirmModal(false)">취소</button>
+        <button id="confirm-ok-btn" style="flex:1; padding:10px; background:var(--primary-color); color:white; border:none; border-radius:10px; font-family:'Gamja Flower'; font-size:1.1em; cursor:pointer; transition: background 0.5s;" onclick="closeConfirmModal(true)">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 컨테이너 -->
+  <div id="toast-container"></div>
+
+  <script>
+    /* ================= Supabase 클라이언트 설정 ================= */
+    const SUPABASE_URL = "https://saogvdvqrnvroyomexbe.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhb2d2ZHZxcm52cm95b21leGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTkxNzUsImV4cCI6MjEwMDMzNTE3NX0.WEL3qSgC6ZK29Kj54iKd3xXY2tPZo2G9GfRBTX5Gmbs";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var BIBLE_LIMITS = { 
+      "창세기": 50, "출애굽기": 40, "레위기": 27, "민수기": 36, "신명기": 34, 
+      "여호수아": 24, "사사기": 21, "룻기": 4, "사무엘상": 31, "사무엘하": 24, 
+      "열왕기상": 22, "열왕기하": 25, "역대상": 29, "역대하": 36, "에스라": 10, 
+      "느헤미야": 13, "에스더": 10, "욥기": 42, "시편": 150, "잠언": 31, 
+      "전도서": 12, "아가": 8, "이사야": 66, "예레미야": 52, "예레미야애가": 5, 
+      "에스겔": 48, "다니엘": 12, "호세아": 14, "요엘": 3, "아모스": 9, 
+      "오바댜": 1, "요나": 4, "미가": 7, "나훔": 3, "하박국": 3, 
+      "스바냐": 3, "학개": 2, "스가랴": 14, "말라기": 4, "마태복음": 28, 
+      "마가복음": 16, "누가복음": 24, "요한복음": 21, "사도행전": 28, "로마서": 16, 
+      "고린도전서": 16, "고린도후서": 13, "갈라디아서": 6, "에베소서": 6, "빌립보서": 4, 
+      "골로새서": 4, "데살로니가전서": 5, "데살로니가후서": 3, "디모데전서": 6, "디모데후서": 4, 
+      "디도서": 3, "빌레몬서": 1, "히브리서": 13, "야고보서": 5, "베드로전서": 5, 
+      "베드로후서": 3, "요한일서": 5, "요한이서": 1, "요한삼서": 1, "유다서": 1, "요한계시록": 22 
+    };
+    var TOTAL_CHAPTERS = 1189;
+
+    var isSignupMode = false; 
+    var currentUser = null; 
+    var globalAdminList = [];
+    var globalIndividualData = [];
+
+    function getTodayString() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    /* ===== 토스트 메시지 UI 함수 ===== */
+    function showToast(message, type = 'info') {
+      var container = document.getElementById('toast-container');
+      if (!container) return;
+
+      var toast = document.createElement('div');
+      toast.className = 'custom-toast ' + type;
+      
+      var icon = '🔔';
+      if (type === 'success') icon = '✅';
+      if (type === 'error') icon = '⚠️';
+      if (type === 'warning') icon = '💡';
+      if (type === 'celebrate') icon = '🎊';
+
+      toast.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span class="toast-message">${message.replace(/\n/g, '<br>')}</span>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(function() { toast.classList.add('show'); }, 10);
+      setTimeout(function() {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        setTimeout(function() {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, 3200);
+    }
+
+    /* ===== 커스텀 확인 모달 함수 ===== */
+    var confirmCallback = null;
+    function showConfirm(message, callback, icon = '❓') {
+      document.getElementById('confirm-message').innerHTML = message.replace(/\n/g, '<br>');
+      document.getElementById('confirm-icon').innerText = icon;
+      confirmCallback = callback;
+      document.getElementById('confirm-modal').style.display = 'flex';
+    }
+
+    function closeConfirmModal(isOk) {
+      document.getElementById('confirm-modal').style.display = 'none';
+      if (confirmCallback) {
+        var cb = confirmCallback;
+        confirmCallback = null;
+        cb(isOk);
+      }
+    }
+    
+    function setTheme(primary, bg, el) {
+      document.documentElement.style.setProperty('--primary-color', primary);
+      document.documentElement.style.setProperty('--bg-color', bg);
+      if(el) {
+        document.querySelectorAll('.theme-circle').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+      }
+      localStorage.setItem('bibleAppThemePrimary', primary);
+      localStorage.setItem('bibleAppThemeBg', bg);
+    }
+
+    var currentFontSize = 18;
+    function changeFontSize(step) {
+      currentFontSize += step;
+      if(currentFontSize < 14) currentFontSize = 14;
+      if(currentFontSize > 28) currentFontSize = 28;
+      document.body.style.fontSize = currentFontSize + 'px';
+    }
+
+    function toggleMode() {
+      isSignupMode = !isSignupMode;
+      document.getElementById('login-title').innerText = isSignupMode ? '📝 회원가입' : '⛪ 성경 대행진 로그인';
+      document.getElementById('uTeam').style.display = isSignupMode ? 'block' : 'none';
+      document.getElementById('action-btn').innerText = isSignupMode ? '가입하기' : '로그인';
+      document.getElementById('toggle-link').innerText = isSignupMode ? '이미 가입하셨나요? [로그인]' : '처음이신가요? [가입하기]';
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.content-area').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabName + '-tab').classList.add('active');
+      var btn = document.querySelector(`button[onclick="switchTab('${tabName}')"]`);
+      if(btn) btn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ================= 초기 로드 ================= */
+    document.addEventListener("DOMContentLoaded", async function() {
+      // 1. 총 읽은 말씀 수
+      try {
+        const { count, error } = await supabase
+          .from('bible_read_logs')
+          .select('*', { count: 'exact', head: true });
+        if (!error && count > 0) {
+          document.getElementById('grand-total-box').style.display = 'block';
+          document.getElementById('grand-total-number').innerText = count.toLocaleString() + "장";
+        }
+      } catch(e) { console.error(e); }
+
+      // 2. 공지사항 조회
+      try {
+        const { data, error } = await supabase
+          .from('bible_notices')
+          .select('*')
+          .eq('id', 1)
+          .eq('status', 'ON')
+          .maybeSingle();
+        if (data && data.title) {
+          document.getElementById('dynamic-notice-container').innerHTML = `
+            <div class="notice-box"><h3 class="notice-title">📢 ${data.title}</h3><div class="notice-text">${data.content}</div></div>
+          `;
+        }
+      } catch(e) { console.error(e); }
+
+      // 3. 오늘의 묵상 나눔 (로그인 화면)
+      loadDevotions('login-devotion-list');
+
+      // 4. 저장된 테마 불러오기
+      var savedPrimary = localStorage.getItem('bibleAppThemePrimary');
+      var savedBg = localStorage.getItem('bibleAppThemeBg');
+      if(savedPrimary && savedBg) {
+         setTheme(savedPrimary, savedBg, null);
+         document.querySelectorAll('.theme-circle').forEach(c => {
+           if(c.getAttribute('data-primary') === savedPrimary) c.classList.add('selected');
+         });
+      } else {
+         document.querySelector('.theme-circle').classList.add('selected'); 
+      }
+    });
+
+    /* ================= 인증 (로그인 & 회원가입) ================= */
+    async function handleAuth() {
+      var name = document.getElementById('uName').value.trim();
+      var pw = document.getElementById('uPw').value.trim();
+      if(!name || !pw) { showToast("정보를 모두 입력해주세요!", "warning"); return; }
+
+      if(isSignupMode) {
+        var team = document.getElementById('uTeam').value.trim();
+        if(!team) { showToast("소그룹 명을 입력해주세요!", "warning"); return; }
+
+        const { data: member, error: findErr } = await supabase
+          .from('bible_members')
+          .select('*')
+          .eq('name', name)
+          .eq('team', team)
+          .maybeSingle();
+
+        if(!member) {
+          showToast("명부에 정보가 없습니다. 이름과 소그룹을 확인하세요.", "error");
+          return;
+        }
+        if(member.status === '가입완료') {
+          showToast("이미 가입되었습니다. 비밀번호를 잊으셨다면 관리자에게 문의하세요.", "error");
+          return;
+        }
+
+        const { error: updateErr } = await supabase
+          .from('bible_members')
+          .update({ password: pw, status: '가입완료' })
+          .eq('id', member.id);
+
+        if(updateErr) {
+          showToast("가입 중 오류가 발생했습니다: " + updateErr.message, "error");
+        } else {
+          showToast("가입 성공! 로그인해주세요.", "success");
+          toggleMode();
+        }
+      } else {
+        const { data: member, error: loginErr } = await supabase
+          .from('bible_members')
+          .select('*')
+          .eq('name', name)
+          .eq('password', pw)
+          .eq('status', '가입완료')
+          .maybeSingle();
+
+        if(member) {
+          currentUser = {
+            name: member.name,
+            team: member.team,
+            isAdmin: member.role === 'admin'
+          };
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('main-app').style.display = 'block';
+          document.getElementById('welcome-msg').innerText = member.name + "님 환영합니다! 📖";
+          if(currentUser.isAdmin) {
+            document.getElementById('admin-tab-btn').style.display = 'block';
+            loadAdminData(); 
+            loadAdminNoticeData(); 
+          }
+          loadAllData();
+        } else {
+          showToast("이름 또는 비밀번호가 틀렸거나 가입되지 않았습니다.", "error");
+        }
+      }
+    }
+
+    /* ================= 데이터 일괄 로드 ================= */
+    async function loadAllData() {
+      loadDevotions('app-devotion-list');
+      loadUserBibleProgress();
+      loadRanks();
+    }
+
+    /* ================= 묵상 나눔 ================= */
+    async function loadDevotions(containerId) {
+      try {
+        const todayStr = getTodayString();
+        const { data, error } = await supabase
+          .from('bible_devotions')
+          .select('*')
+          .eq('date', todayStr)
+          .order('created_at', { ascending: false });
+
+        if(error) { console.error(error); return; }
+
+        const currentUserName = currentUser ? currentUser.name : null;
+        const list = (data || []).map(item => ({
+          name: item.name,
+          team: item.team,
+          readRange: item.read_range,
+          content: item.content,
+          likesCount: item.likes ? item.likes.length : 0,
+          isLiked: (item.likes && currentUserName) ? item.likes.includes(currentUserName) : false
+        }));
+        renderDevotions(list, containerId);
+      } catch(e) { console.error(e); }
+    }
+
+    function renderDevotions(list, containerId) {
+      var container = document.getElementById(containerId);
+      if(!container) return;
+      if(!list || list.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">오늘 공유된 묵상 나눔이 아직 없습니다. 🌱</div>';
+        return;
+      }
+      var html = '';
+      list.forEach(item => {
+        var likedClass = item.isLiked ? 'liked' : '';
+        var contentText = item.content ? item.content : '<span style="color:#aaa; font-size:0.95em;">(오늘 읽은 성경 구절을 기록했습니다)</span>';
+        
+        html += `
+          <div class="devotion-card">
+            <div class="devotion-header">
+              <div>
+                <span class="devotion-user">${item.name}</span>
+                <span class="devotion-team">(${item.team})</span>
+              </div>
+              <span class="devotion-range">${item.readRange}</span>
+            </div>
+            <div class="devotion-body">${contentText}</div>
+            <div class="devotion-footer">
+              <button class="like-btn ${likedClass}" onclick="handleLike('${item.name}', this)">
+                <span class="like-heart">❤️</span> 좋아요 <span>${item.likesCount}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    async function getTodayReadRangeSummary(userName) {
+      try {
+        const todayStr = getTodayString();
+        // 오늘 날짜의 읽기 로그 조회
+        const startOfDay = todayStr + "T00:00:00+09:00";
+        const { data, error } = await supabase
+          .from('bible_read_logs')
+          .select('book, chapter, lap')
+          .eq('name', userName)
+          .gte('read_at', startOfDay);
+
+        if(!data || data.length === 0) return "오늘 읽은 기록 없음";
+
+        var readMap = {};
+        data.forEach(r => {
+          var key = r.book + "_" + r.lap;
+          if(!readMap[key]) readMap[key] = { book: r.book, lap: r.lap, chapters: [] };
+          readMap[key].chapters.push(r.chapter);
+        });
+
+        var summaries = [];
+        for (var k in readMap) {
+          var item = readMap[k];
+          item.chapters.sort((a, b) => a - b);
+          var minCh = item.chapters[0];
+          var maxCh = item.chapters[item.chapters.length - 1];
+          var rangeText = (minCh === maxCh) ? minCh + "장" : minCh + "~" + maxCh + "장";
+          summaries.push(item.book + " " + rangeText + " (" + item.lap + "독)");
+        }
+        return summaries.length > 0 ? summaries.join(", ") : "오늘 읽은 기록 없음";
+      } catch(e) {
+        return "오늘 읽은 기록 없음";
+      }
+    }
+
+    async function submitDevotion() {
+      if(!currentUser) return;
+      var content = document.getElementById('devotion-text').value.trim();
+      var todayStr = getTodayString();
+      var readRange = await getTodayReadRangeSummary(currentUser.name);
+
+      const { error } = await supabase
+        .from('bible_devotions')
+        .upsert({
+          date: todayStr,
+          name: currentUser.name,
+          team: currentUser.team,
+          read_range: readRange,
+          content: content
+        }, { onConflict: 'date,name' });
+
+      if(!error) {
+        showToast('오늘의 묵상이 공유되었습니다! 🕊️', 'success');
+        document.getElementById('devotion-text').value = '';
+        loadDevotions('app-devotion-list');
+      } else {
+        showToast('묵상 저장 실패: ' + error.message, 'error');
+      }
+    }
+
+    async function handleLike(targetName, btnEl) {
+      if(!currentUser) {
+        showToast("좋아요 기능은 로그인 후 사용 가능합니다.", "warning");
+        return;
+      }
+      const todayStr = getTodayString();
+      const { data: item } = await supabase
+        .from('bible_devotions')
+        .select('likes')
+        .eq('date', todayStr)
+        .eq('name', targetName)
+        .maybeSingle();
+
+      if(!item) return;
+      let likes = item.likes || [];
+      const idx = likes.indexOf(currentUser.name);
+      let isLikedNow = false;
+      if (idx > -1) {
+        likes.splice(idx, 1);
+      } else {
+        likes.push(currentUser.name);
+        isLikedNow = true;
+      }
+
+      const { error } = await supabase
+        .from('bible_devotions')
+        .update({ likes: likes })
+        .eq('date', todayStr)
+        .eq('name', targetName);
+
+      if(!error) {
+        var countSpan = btnEl.querySelector('span:last-child');
+        countSpan.innerText = likes.length;
+        if(isLikedNow) {
+          btnEl.classList.add('liked');
+        } else {
+          btnEl.classList.remove('liked');
+        }
+      }
+    }
+
+    /* ================= 내 성경 읽기 ================= */
+    function getLapInfo(lap) {
+      var color, icon;
+      switch(lap) {
+        case 1: color='#4caf50'; icon='🐎'; break;
+        case 2: color='#ab47bc'; icon='🦄'; break;
+        case 3: color='#ffb300'; icon='🦅'; break;
+        case 4: color='#e53935'; icon='🦁'; break;
+        case 5: color='#1e88e5'; icon='👑'; break;
+        case 6: color='#03a9f4'; icon='🕊️'; break;
+        case 7: color='#e91e63'; icon='🌈'; break;
+        case 8: color='#00acc1'; icon='🌟'; break;
+        case 9: color='#ff5722'; icon='🔥'; break;
+        case 10: color='#1a237e'; icon='💎'; break;
+        case 11: color='#7b1fa2'; icon='🍇'; break;
+        case 12: color='#33691e'; icon='🌳'; break;
+        case 13: color='#00838f'; icon='⛵'; break;
+        case 14: color='#37474f'; icon='⚓'; break;
+        case 15: color='#9e9e9e'; icon='🛡️'; break;
+        case 16: color='#b71c1c'; icon='⚔️'; break;
+        case 17: color='#f57f17'; icon='🎺'; break;
+        case 18: color='#ef6c00'; icon='☀️'; break;
+        case 19: color='#5d4037'; icon='📖'; break;
+        default: color='#ffea00'; icon='🏆'; break;
+      }
+      return { color: color, icon: icon };
+    }
+
+    async function loadUserBibleProgress() {
+      if(!currentUser) return;
+      document.getElementById('loading-bible').style.display = 'block';
+
+      const { data, error } = await supabase
+        .from('bible_read_logs')
+        .select('book, chapter, lap')
+        .eq('name', currentUser.name)
+        .eq('team', currentUser.team);
+
+      var bookStats = {};
+      for (var b in BIBLE_LIMITS) bookStats[b] = { lap: 1, maxChapter: 0, checked: [] };
+
+      if(data) {
+        data.forEach(r => {
+          var book = r.book;
+          var chapter = r.chapter;
+          var lap = r.lap || 1;
+          if (BIBLE_LIMITS[book]) {
+            if (lap > bookStats[book].lap) {
+              bookStats[book].lap = lap; 
+              bookStats[book].maxChapter = chapter; 
+              bookStats[book].checked = [chapter];
+            } else if (lap === bookStats[book].lap) {
+              if (chapter > bookStats[book].maxChapter) bookStats[book].maxChapter = chapter;
+              if (bookStats[book].checked.indexOf(chapter) === -1) bookStats[book].checked.push(chapter);
+            }
+          }
+        });
+      }
+
+      for (var b in bookStats) {
+        if (bookStats[b].checked.length >= BIBLE_LIMITS[b] || bookStats[b].maxChapter >= BIBLE_LIMITS[b]) {
+          bookStats[b].lap += 1; 
+          bookStats[b].maxChapter = 0; 
+          bookStats[b].checked = [];
+        }
+      }
+
+      renderMyBible(bookStats);
+    }
+
+    function renderMyBible(stats) {
+      document.getElementById('loading-bible').style.display = 'none';
+      var container = document.getElementById('my-bible-container');
+      var html = '';
+      for (var book in BIBLE_LIMITS) {
+        var limit = BIBLE_LIMITS[book];
+        var stat = stats[book] || { lap: 1, checked: [] };
+        var lapInfo = getLapInfo(stat.lap);
+        var checkedCount = stat.checked.length;
+        
+        html += `<div class="book-card">
+          <div class="book-header" onclick="document.getElementById('grid-${book}').style.display = document.getElementById('grid-${book}').style.display === 'none' ? 'grid' : 'none'">
+            <span>${book} <span class="book-progress-text">(${stat.lap}독 진행중 ${lapInfo.icon})</span></span>
+            <span id="count-${book}" style="color:${lapInfo.color}">${checkedCount} / ${limit}</span>
+          </div>
+          <div class="chapter-grid" id="grid-${book}" style="display:none;">`;
+        
+        for (var i = 1; i <= limit; i++) {
+          var isChecked = stat.checked.includes(i);
+          var style = isChecked ? `background:${lapInfo.color}; color:white; border-color:${lapInfo.color};` : ``;
+          var chkAttr = isChecked ? 'true' : 'false';
+          html += `<div class="chapter-box" data-checked="${chkAttr}" style="${style}" onclick="toggleChapter('${book}', ${i}, ${stat.lap}, this, '${lapInfo.color}')">${i}</div>`;
+        }
+        html += `</div></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    async function toggleChapter(book, chapter, lap, el, color) {
+      var isChecked = el.getAttribute('data-checked') === 'true';
+      var countEl = document.getElementById('count-' + book);
+      var currentCount = parseInt(countEl.innerText.split('/')[0]);
+      var limit = BIBLE_LIMITS[book];
+
+      if (isChecked) {
+        // 단일 취소
+        el.setAttribute('data-checked', 'false');
+        el.style.background = 'white'; el.style.color = '#aaa'; el.style.borderColor = '#ddd';
+        countEl.innerText = (currentCount - 1) + " / " + limit;
+
+        await supabase
+          .from('bible_read_logs')
+          .delete()
+          .eq('name', currentUser.name)
+          .eq('team', currentUser.team)
+          .eq('book', book)
+          .eq('chapter', chapter)
+          .eq('lap', lap);
+
+        loadRanks();
+      } else {
+        // 읽은 곳까지 일괄 체크
+        var grid = document.getElementById('grid-' + book);
+        var boxes = grid.getElementsByClassName('chapter-box');
+        var newlyCheckedCount = 0;
+
+        for (var i = 0; i < chapter; i++) {
+          if (boxes[i].getAttribute('data-checked') === 'false') { newlyCheckedCount++; }
+        }
+        var totalNow = currentCount + newlyCheckedCount;
+
+        var doMarkProcess = async function() {
+          for (var i = 0; i < chapter; i++) {
+            if (boxes[i].getAttribute('data-checked') === 'false') {
+              boxes[i].setAttribute('data-checked', 'true');
+              boxes[i].style.background = color; boxes[i].style.color = 'white'; boxes[i].style.borderColor = color;
+            }
+          }
+          countEl.innerText = totalNow + " / " + limit;
+
+          var rowsToAdd = [];
+          var now = new Date().toISOString();
+          for (var ch = 1; ch <= chapter; ch++) {
+            rowsToAdd.push({
+              name: currentUser.name,
+              team: currentUser.team,
+              book: book,
+              chapter: ch,
+              lap: lap,
+              read_at: now
+            });
+          }
+
+          const { error } = await supabase
+            .from('bible_read_logs')
+            .upsert(rowsToAdd, { onConflict: 'name,team,book,chapter,lap' });
+
+          if(error) {
+            showToast("저장 중 오류: " + error.message, "error");
+          } else {
+            if(totalNow === limit) {
+              setTimeout(() => {
+                showToast(`🎊 할렐루야! ${book} ${lap}독 완독을 축하드립니다!\n다음 독차 트랙으로 이동합니다.`, 'celebrate');
+                document.getElementById('loading-bible').style.display = 'block';
+                document.getElementById('my-bible-container').innerHTML = '';
+                loadAllData();
+              }, 300);
+            }
+          }
+          loadRanks();
+        };
+
+        if (totalNow === limit) {
+          showConfirm(`🎉 [${book}] 완독이 코앞입니다!\n모두 읽으신 것이 맞나요?\n('확인' 시 레벨업 화면으로 넘어갑니다.)`, function(isOk) {
+            if (isOk) doMarkProcess();
+          }, '📖');
+        } else {
+          doMarkProcess();
+        }
+      }
+    }
+
+    /* ================= 순위 및 트랙 로드 ================= */
+    async function loadRanks() {
+      // 1. 소그룹 랭킹 조회
+      try {
+        const { data: teamData, error: teamErr } = await supabase
+          .from('bible_view_team_rankings')
+          .select('*');
+        if(!teamErr && teamData) {
+          drawGroupRace(teamData);
+        }
+      } catch(e) { console.error(e); }
+
+      // 2. 개인별 순위 조회
+      try {
+        const { data: indivData, error: indivErr } = await supabase
+          .from('bible_view_individual_rankings')
+          .select('*');
+        if(!indivErr && indivData) {
+          globalIndividualData = indivData;
+          drawIndividualList(indivData);
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    function drawGroupRace(data) {
+      var container = document.getElementById('group-track'); 
+      if(!container) return;
+      var html = ''; 
+      data.forEach(team => {
+        var info = getLapInfo(team.lap);
+        html += `
+          <div class="lane group-lane-box" onclick="showTeamDetails('${team.team}')">
+            <div style="width:70px; flex-shrink:0;">
+              <span style="font-weight:bold; font-size:1.3em;">${team.team}</span><br>
+              <span style="font-size:0.75em; color:#666;">(${team.memberCount}명)</span>
+            </div>
+            <div class="lane-center">
+              <div class="track-bg-line"></div><div style="position:absolute; right:-5px; z-index:2; font-size:1.3em;">🏁</div>
+              <div class="track-fill-bar" style="width:${team.displayPercent}%; background:${info.color};"></div>
+              <div class="horse-wrapper" style="left:${team.displayPercent}%;"><span class="horse-icon" style="filter:drop-shadow(0 0 5px ${info.color})">${info.icon}</span></div>
+            </div>
+            <div style="width:50px; text-align:right; font-weight:bold; color:var(--primary-color)">${team.totalPercent}%</div>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function drawIndividualList(list) {
+      var container = document.getElementById('individual-list-container');
+      if(!container) return;
+      var html = '<table class="rank-table">';
+      list.forEach((user, idx) => {
+        html += createIndivRowHtml(user, idx + 1);
+      });
+      container.innerHTML = html + '</table>';
+    }
+
+    function createIndivRowHtml(user, rank) {
+      var info = getLapInfo(user.lap);
+      var displayPercent = (user.percent % 100);
+      if (user.percent > 0 && displayPercent === 0) displayPercent = 100;
+      var currentBookText = user.currentBook ? `${user.currentBook} ${user.currentChapter || 1}장` : '기록 없음';
+
+      return `
+        <tr class="rank-row">
+          <td class="rank-cell" style="width:30px; font-weight:bold; text-align:center;">${rank}</td>
+          <td class="rank-cell">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <b>${user.name}</b> <small style="color:#666;">(${user.team})</small>
+                <div style="font-size:0.8em; color:#888;">📖 최근: ${currentBookText}</div>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.8em; color:${info.color}; font-weight:bold;">${user.lap}독</span> 
+                <b>${user.percent}%</b>
+              </div>
+            </div>
+            <div class="indiv-track-area">
+              <div class="indiv-track-bg"></div>
+              <div class="indiv-track-fill" style="width:${displayPercent}%; background:${info.color};"></div>
+              <div class="indiv-horse-wrapper" style="left:${displayPercent}%;">
+                <span class="horse-icon" style="font-size:1.2em; filter:drop-shadow(0 0 3px ${info.color})">${info.icon}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    function showTeamDetails(teamName) {
+      document.getElementById('team-modal-title').innerText = `🏁 [${teamName}] 소그룹 순위`;
+      var teamMembers = globalIndividualData.filter(u => u.team === teamName);
+      var html = '<table class="rank-table">';
+      teamMembers.forEach((user, idx) => {
+        html += createIndivRowHtml(user, idx + 1);
+      });
+      document.getElementById('team-modal-list').innerHTML = html + '</table>';
+      document.getElementById('team-modal').style.display = 'flex';
+    }
+
+    function closeTeamModal(e) {
+      if(e.target.id === 'team-modal') document.getElementById('team-modal').style.display = 'none';
+    }
+
+    /* ================= 관리자 기능 ================= */
+    function formatText(cmd, val = null) { 
+      document.execCommand(cmd, false, val); 
+      document.getElementById('admin-notice-content').focus(); 
+    }
+
+    async function loadAdminNoticeData() {
+      const { data } = await supabase.from('bible_notices').select('*').eq('id', 1).maybeSingle();
+      if(data) {
+        document.getElementById('admin-notice-status').value = data.status === 'ON' ? 'ON' : 'OFF';
+        document.getElementById('admin-notice-title').value = data.title || '';
+        document.getElementById('admin-notice-content').innerHTML = data.content || '';
+      }
+    }
+
+    async function saveAdminNotice() {
+      var status = document.getElementById('admin-notice-status').value;
+      var title = document.getElementById('admin-notice-title').value.trim();
+      var content = document.getElementById('admin-notice-content').innerHTML;
+      if(status === 'ON' && !title) { showToast('공지 제목을 입력해주세요.', 'warning'); return; }
+
+      const { error } = await supabase
+        .from('bible_notices')
+        .update({ status: status, title: title, content: content, updated_at: new Date().toISOString() })
+        .eq('id', 1);
+
+      if(!error) {
+        showToast('공지사항이 저장되었습니다!', 'success');
+        var noticeContainer = document.getElementById('dynamic-notice-container');
+        if(status === 'ON') noticeContainer.innerHTML = `<div class="notice-box"><h3 class="notice-title">📢 ${title}</h3><div class="notice-text">${content}</div></div>`;
+        else noticeContainer.innerHTML = '';
+      } else {
+        showToast('공지 저장 실패: ' + error.message, 'error');
+      }
+    }
+
+    async function addNewMember() {
+      var name = document.getElementById('new-member-name').value.trim();
+      var team = document.getElementById('new-member-team').value.trim();
+      if(!name || !team) { showToast("이름과 소그룹을 모두 입력해주세요!", "warning"); return; }
+      
+      showConfirm(`[${team}] ${name} 성도님을 새 회원명부에 추가하시겠습니까?`, async function(isOk) {
+        if(isOk) {
+          const { error } = await supabase
+            .from('bible_members')
+            .insert([{ name: name, team: team, status: '미가입', role: 'member' }]);
+
+          if(!error) {
+            showToast("새 성도가 추가되었습니다!", "success");
+            document.getElementById('new-member-name').value = '';
+            document.getElementById('new-member-team').value = '';
+            loadAdminData();
+          } else {
+            showToast("추가 실패: " + error.message, "error");
+          }
+        }
+      }, '➕');
+    }
+
+    async function loadAdminData() {
+      const { data } = await supabase
+        .from('bible_members')
+        .select('*')
+        .order('name');
+      if(data) {
+        globalAdminList = data;
+        drawAdminTable(data);
+      }
+    }
+
+    function searchAdminList() {
+      var q = document.getElementById('admin-search').value.trim();
+      if(!q) drawAdminTable(globalAdminList); 
+      else drawAdminTable(globalAdminList.filter(m => m.name.includes(q) || m.team.includes(q)));
+    }
+
+    function drawAdminTable(list) {
+      var html = '<table class="rank-table">';
+      list.forEach(m => {
+        var isReg = m.status === '가입완료'; 
+        var statusColor = isReg ? '#4caf50' : '#9e9e9e'; 
+        var statusText = isReg ? '가입됨' : '미가입';
+        var btnHtml = isReg ? `<button onclick="resetAccount('${m.name}', '${m.team}')" style="background:#e53935; color:white; border:none; padding:6px 12px; border-radius:5px; font-family:'Gamja Flower'; cursor:pointer;">초기화</button>` : '';
+        html += `<tr class="rank-row"><td class="rank-cell"><b>${m.name}</b> <small>(${m.team})</small></td><td class="rank-cell" style="text-align:center;"><span style="color:${statusColor}; font-weight:bold; font-size:0.9em;">${statusText}</span></td><td class="rank-cell" style="text-align:right;">${btnHtml}</td></tr>`;
+      });
+      document.getElementById('admin-member-list').innerHTML = html + '</table>';
+    }
+
+    function resetAccount(name, team) {
+      showConfirm(`${name} 님의 비밀번호를 초기화하시겠습니까?`, async function(isOk) {
+        if(isOk) {
+          const { error } = await supabase
+            .from('bible_members')
+            .update({ password: null, status: '미가입' })
+            .eq('name', name)
+            .eq('team', team);
+
+          if(!error) {
+            showToast('계정이 초기화되었습니다.', 'success');
+            loadAdminData();
+          } else {
+            showToast('초기화 실패: ' + error.message, 'error');
+          }
+        }
+      }, '⚠️');
+    }
+  </script>
+</body>
+</html>
