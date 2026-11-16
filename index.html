@@ -33,7 +33,7 @@
     .content-area.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    .global-top-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .global-top-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; position: relative; z-index: 20; }
     .font-btn-group { display: flex; gap: 5px; }
     .font-btn { padding: 5px 12px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; font-family: 'Gamja Flower'; cursor: pointer; font-weight: bold; transition: 0.2s; }
     .font-btn:active { background: #bdbdbd; }
@@ -41,7 +41,44 @@
     .logout-bar { text-align: right; margin-bottom: 10px; }
     .logout-btn { padding: 5px 12px; background: #9e9e9e; color: white; border: none; border-radius: 8px; font-family: 'Gamja Flower'; cursor: pointer; }
 
-    .login-container { max-width: 400px; margin: 20px auto 30px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    /* Grid Pulse 인터랙티브 배경 효과 */
+    .grid-pulse-container {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 0;
+      --grid-pulse-cell: 24px;
+      --grid-pulse-line: rgba(26, 35, 126, 0.08);
+      background-image: 
+        linear-gradient(to right, var(--grid-pulse-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-pulse-line) 1px, transparent 1px);
+      background-size: var(--grid-pulse-cell) var(--grid-pulse-cell);
+      mask-image: linear-gradient(to bottom, #000 90%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent);
+    }
+    .grid-pulse-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .login-container { 
+      position: relative; 
+      z-index: 10; 
+      max-width: 400px; 
+      margin: 20px auto 30px auto; 
+      background: rgba(255, 255, 255, 0.94); 
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 30px; 
+      border-radius: 20px; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    }
     .login-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e0e0e0; font-family: 'Gamja Flower'; font-size: 1.1em; margin-bottom:15px; box-sizing: border-box; text-align: center; }
     .login-btn { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; font-family: 'Gamja Flower'; transition: background 0.5s; }
 
@@ -163,7 +200,9 @@
       left: calc(50% + 230px);
       top: 100px;
       width: 220px;
-      background: white;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding: 20px 15px;
       border-radius: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -222,6 +261,11 @@
   </div>
 
   <div id="login-screen">
+    <!-- Grid Pulse 인터랙티브 배경 캔버스 -->
+    <div id="grid-pulse-box" class="grid-pulse-container" aria-hidden="true">
+      <canvas id="grid-pulse-canvas" class="grid-pulse-canvas"></canvas>
+    </div>
+
     <!-- 데스크톱/프로젝터용 플로팅 QR 코드 안내 -->
     <div class="desktop-qr-card">
       <div class="qr-title">📱 스마트폰 접속 QR</div>
@@ -235,7 +279,7 @@
     </div>
 
     <div class="login-container">
-      <h2 id="login-title">⛪ 성경 대행진 로그인</h2>
+      <h2 id="login-title" data-grid-avoid>⛪ 성경 대행진 로그인</h2>
 
       <div class="grand-total-box" id="grand-total-box" style="display:none;">
         <div class="grand-total-text">🙏 성도님들이 함께 읽은 말씀</div>
@@ -251,12 +295,12 @@
       <p id="toggle-link" style="text-align:center; margin-top:15px; color:#666; cursor:pointer; text-decoration:underline;" onclick="toggleMode()">처음이신가요? [가입하기]</p>
     </div>
 
-    <div style="max-width:450px; margin:0 auto 20px auto;">
-      <h3 style="text-align:center; color:var(--primary-color); margin-bottom:15px;">💬 오늘의 묵상 나눔</h3>
+    <div style="max-width:450px; margin:0 auto 20px auto; position: relative; z-index: 10;">
+      <h3 style="text-align:center; color:var(--primary-color); margin-bottom:15px;" data-grid-avoid>💬 오늘의 묵상 나눔</h3>
       <div id="login-devotion-list"></div>
     </div>
 
-    <div class="bottom-info-area">
+    <div class="bottom-info-area" style="position: relative; z-index: 10;">
       <div class="warning-msg">⚠️ 새로고침하면 로그아웃됩니다 — 비밀번호를 기억해 두세요!</div>
       <div class="theme-palette" id="theme-palette">
         <div class="theme-circle" data-primary="#1a237e" style="background:#1a237e;" onclick="setTheme('#1a237e', '#f4faff', this)"></div>
@@ -540,6 +584,7 @@
     function setTheme(primary, bg, el) {
       document.documentElement.style.setProperty('--primary-color', primary);
       document.documentElement.style.setProperty('--bg-color', bg);
+      document.documentElement.style.setProperty('--grid-pulse-line', primary + '14');
       if(el) {
         document.querySelectorAll('.theme-circle').forEach(c => c.classList.remove('selected'));
         el.classList.add('selected');
@@ -574,7 +619,223 @@
     }
 
     /* ================= 초기 로드 ================= */
+    
+    /* ================= Grid Pulse 인터랙티브 배경 (Vanilla JS / Canvas) ================= */
+    const HUE_TOP = 60;
+    const HUE_SPAN = 270;
+    const TINTS = [88, 80, 72, 64, 56];
+    const TINTS_DARK = [72, 65, 58, 51, 44];
+    const FAINT = 0.13;
+    const FADE = 2.2;
+    const PAD = 5;
+    const FADE_IN = 160;
+    const FADE_OUT = 750;
+
+    const easeOut = (t) => 1 - (1 - t) ** 2;
+    const easeIn = (t) => t * t;
+
+    function initGridPulse() {
+      const el = document.getElementById('grid-pulse-box');
+      const paper = document.getElementById('grid-pulse-canvas');
+      if (!el || !paper) return;
+      const ctx = paper.getContext('2d');
+      if (!ctx) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const cell = 24;
+      const reach = 2.6;
+      const ambient = 2;
+      const maxLit = 180;
+      const avoid = '[data-grid-avoid]';
+
+      let cols = 1;
+      let rows = 1;
+      let width = 0;
+      let height = 0;
+      let clear = [];
+      let tints = TINTS;
+      const cells = new Map();
+
+      const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+      const readTheme = () => {
+        if (!probe) return;
+        probe.clearRect(0, 0, 1, 1);
+        probe.fillStyle = getComputedStyle(document.body).color || '#333';
+        probe.fillRect(0, 0, 1, 1);
+        const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
+        const light = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.5;
+        tints = light ? TINTS_DARK : TINTS;
+      };
+
+      const measureText = () => {
+        const bounds = el.getBoundingClientRect();
+        const scope = el.parentElement || document;
+        clear = Array.from(scope.querySelectorAll(avoid)).flatMap((node) => {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const lines = Array.from(range.getClientRects()).filter(
+            (r) => r.width > 0 && r.height > 0
+          );
+          const boxes = lines.length > 0 ? lines : [node.getBoundingClientRect()];
+          return boxes.map((r) => ({
+            left: r.left - bounds.left - PAD,
+            top: r.top - bounds.top - PAD,
+            right: r.left - bounds.left + r.width + PAD,
+            bottom: r.top - bounds.top + r.height + PAD
+          }));
+        });
+      };
+
+      const measure = () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        cols = Math.max(1, Math.ceil(width / cell));
+        rows = Math.max(1, Math.ceil(height / cell));
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        paper.width = Math.round(width * dpr);
+        paper.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        readTheme();
+        measureText();
+        wake();
+      };
+
+      const brightness = (col, row) => {
+        if (!clear.length) return 1;
+        const x = col * cell + cell / 2;
+        const y = row * cell + cell / 2;
+        let nearest = Number.POSITIVE_INFINITY;
+        for (const r of clear) {
+          const dx = Math.max(r.left - x, 0, x - r.right);
+          const dy = Math.max(r.top - y, 0, y - r.bottom);
+          nearest = Math.min(nearest, Math.hypot(dx, dy));
+          if (nearest === 0) break;
+        }
+        if (nearest === Number.POSITIVE_INFINITY) return 1;
+        return FAINT + (1 - FAINT) * Math.min(1, nearest / (FADE * cell));
+      };
+
+      const ink = (row) => {
+        const t = rows > 1 ? Math.min(1, row / (rows - 1)) : 0;
+        const hue = (((HUE_TOP - t * HUE_SPAN) % 360) + 360) % 360;
+        const tint = tints[Math.floor(Math.random() * tints.length)];
+        return `hsl(${Math.round(hue)} 94% ${tint}%)`;
+      };
+
+      let frame = 0;
+      let visible = true;
+      const draw = (now) => {
+        frame = 0;
+        ctx.clearRect(0, 0, width, height);
+        for (const [key, c] of cells) {
+          let alpha;
+          if (now < c.until) {
+            alpha = easeOut(Math.min(1, (now - c.born) / FADE_IN));
+          } else {
+            const t = (now - c.until) / FADE_OUT;
+            if (t >= 1) {
+              cells.delete(key);
+              continue;
+            }
+            alpha = 1 - easeIn(t);
+          }
+          ctx.globalAlpha = alpha * c.dim;
+          ctx.fillStyle = c.colour;
+          ctx.fillRect(c.col * cell + 1, c.row * cell + 1, cell - 1, cell - 1);
+        }
+        ctx.globalAlpha = 1;
+        if (cells.size > 0 && visible) {
+          frame = requestAnimationFrame(draw);
+        }
+      };
+
+      const wake = () => {
+        if (!frame && visible) frame = requestAnimationFrame(draw);
+      };
+
+      const light = (col, row, hold) => {
+        if (col < 0 || row < 0 || col >= cols || row >= rows) return;
+        if (cells.size >= maxLit) return;
+        const key = `${col},${row}`;
+        const now = performance.now();
+        const lit = cells.get(key);
+        if (lit && now < lit.until) return;
+
+        let born = now;
+        if (lit) {
+          const faded = 1 - easeIn(Math.min(1, (now - lit.until) / FADE_OUT));
+          born = now - (1 - Math.sqrt(1 - faded)) * FADE_IN;
+        }
+        cells.set(key, {
+          col,
+          row,
+          colour: lit ? lit.colour : ink(row),
+          dim: brightness(col, row),
+          born,
+          until: now + hold,
+        });
+        wake();
+      };
+
+      let pending = 0;
+      let at = null;
+      const paint = () => {
+        pending = 0;
+        if (!at || !visible) return;
+        const cx = Math.floor(at.x / cell);
+        const cy = Math.floor(at.y / cell);
+        const span = Math.ceil(reach);
+        for (let dy = -span; dy <= span; dy++) {
+          for (let dx = -span; dx <= span; dx++) {
+            const away = Math.hypot(dx, dy);
+            if (away > reach) continue;
+            if (Math.random() > 1 - away / (reach + 0.6)) continue;
+            light(cx + dx, cy + dy, 260 + Math.random() * 900);
+          }
+        }
+      };
+
+      const onMove = (event) => {
+        if (!visible) return;
+        at = { x: event.clientX, y: event.clientY };
+        if (!pending) pending = requestAnimationFrame(paint);
+      };
+
+      let beat = 0;
+      const drift = () => {
+        beat = window.setTimeout(drift, 1400 + Math.random() * 1800);
+        if (!visible || document.hidden) return;
+        for (let i = 0; i < ambient; i++) {
+          light(
+            Math.floor(Math.random() * cols),
+            Math.floor(Math.random() * rows),
+            900 + Math.random() * 1600
+          );
+        }
+      };
+      beat = window.setTimeout(drift, 500);
+
+      const loginScreenEl = document.getElementById('login-screen');
+      if (window.IntersectionObserver && loginScreenEl) {
+        const sight = new IntersectionObserver(([entry]) => {
+          visible = entry ? entry.isIntersecting : true;
+          if (visible) wake();
+        });
+        sight.observe(loginScreenEl);
+      }
+
+      window.addEventListener('resize', measure);
+      window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener('pointerdown', onMove, { passive: true });
+
+      measure();
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(measureText).catch(() => {});
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", async function() {
+      initGridPulse();
       // 1. 총 읽은 말씀 수
       try {
         const { count, error } = await sb
