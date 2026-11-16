@@ -1,0 +1,17 @@
+{
+  "name": "2026 성경 대행진 - 회정교회",
+  "short_name": "성경 대행진",
+  "description": "회정교회 전교인 말씀 통독 및 성경 대행진 웹앱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4faff",
+  "theme_color": "#1a237e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="50%" stop-color="#1a237e"/>
+      <stop offset="100%" stop-color="#0d1442"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe082"/>
+      <stop offset="50%" stop-color="#ffb300"/>
+      <stop offset="100%" stop-color="#f57f17"/>
+    </linearGradient>
+    <linearGradient id="pageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle App Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle inner border -->
+  <rect x="8" y="8" width="496" height="496" rx="104" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="4"/>
+
+  <!-- Divine Light Rays / Glow -->
+  <circle cx="256" cy="230" r="140" fill="url(#goldGrad)" opacity="0.15" filter="blur(20px)"/>
+
+  <!-- Golden Cross shining above -->
+  <g filter="url(#shadow)">
+    <!-- Vertical bar -->
+    <rect x="246" y="95" width="20" height="75" rx="6" fill="url(#goldGrad)"/>
+    <!-- Horizontal bar -->
+    <rect x="230" y="115" width="52" height="20" rx="6" fill="url(#goldGrad)"/>
+    <!-- Small halo ring -->
+    <circle cx="256" cy="125" r="28" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.6"/>
+  </g>
+
+  <!-- Open Bible Book -->
+  <g filter="url(#shadow)">
+    <!-- Left Cover edge -->
+    <path d="M 96,380 C 130,375 190,370 248,390 L 248,220 C 190,200 130,205 96,210 Z" fill="#b0bec5"/>
+    <!-- Right Cover edge -->
+    <path d="M 416,380 C 382,375 322,370 264,390 L 264,220 C 322,200 382,205 416,210 Z" fill="#b0bec5"/>
+
+    <!-- Left Page Base -->
+    <path d="M 104,370 C 140,364 200,360 252,380 L 252,210 C 200,190 140,194 104,200 Z" fill="url(#pageGrad)"/>
+    
+    <!-- Right Page Base -->
+    <path d="M 408,370 C 372,364 312,360 260,380 L 260,210 C 312,190 372,194 408,200 Z" fill="url(#pageGrad)"/>
+
+    <!-- Center Spine -->
+    <path d="M 252,210 L 260,210 L 260,382 C 256,385 252,385 252,382 Z" fill="#cfd8dc"/>
+    
+    <!-- Ribbon hanging down -->
+    <path d="M 253,210 Q 256,310 256,410 L 245,430 L 256,420 L 267,430 L 256,410 Z" fill="url(#goldGrad)"/>
+
+    <!-- Scripture Text Lines Left Page -->
+    <line x1="130" y1="235" x2="225" y2="230" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="130" y1="260" x2="228" y2="255" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="130" y1="285" x2="220" y2="280" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="130" y1="310" x2="225" y2="305" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="130" y1="335" x2="190" y2="332" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Scripture Text Lines Right Page -->
+    <line x1="287" y1="230" x2="382" y2="235" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="284" y1="255" x2="382" y2="260" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="292" y1="280" x2="382" y2="285" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="287" y1="305" x2="382" y2="310" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="322" y1="332" x2="382" y2="335" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>
