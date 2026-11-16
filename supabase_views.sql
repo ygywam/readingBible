@@ -1,14 +1,15 @@
 -- ========================================================
 -- 회정교회 성경 대행진: 초고속 랭킹 조회를 위한 통계 뷰 (View)
+-- (비정상 초과 장수 클램핑 방어 코드 적용 완료)
 -- ========================================================
 
--- 1. 성도별 성경 책별 진행 요약 뷰
+-- 1. 성도별 성경 책별 진행 요약 뷰 (초과 장수 클램핑 적용)
 CREATE OR REPLACE VIEW bible_user_book_summary AS
 SELECT 
     l.name, 
     l.team, 
     l.book, 
-    MAX((l.lap - 1) * b.total_chapters + l.chapter) as max_read_chapters,
+    MAX((l.lap - 1) * b.total_chapters + LEAST(l.chapter, b.total_chapters)) as max_read_chapters,
     MAX(l.read_at) as last_read_at
 FROM bible_read_logs l
 JOIN bible_books b ON l.book = b.book_name
