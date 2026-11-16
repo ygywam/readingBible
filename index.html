@@ -391,7 +391,7 @@
     /* ================= Supabase 클라이언트 설정 ================= */
     const SUPABASE_URL = "https://saogvdvqrnvroyomexbe.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhb2d2ZHZxcm52cm95b21leGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTkxNzUsImV4cCI6MjEwMDMzNTE3NX0.WEL3qSgC6ZK29Kj54iKd3xXY2tPZo2G9GfRBTX5Gmbs";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var BIBLE_LIMITS = { 
       "창세기": 50, "출애굽기": 40, "레위기": 27, "민수기": 36, "신명기": 34, 
@@ -511,7 +511,7 @@
     document.addEventListener("DOMContentLoaded", async function() {
       // 1. 총 읽은 말씀 수
       try {
-        const { count, error } = await supabase
+        const { count, error } = await sb
           .from('bible_read_logs')
           .select('*', { count: 'exact', head: true });
         if (!error && count > 0) {
@@ -522,7 +522,7 @@
 
       // 2. 공지사항 조회
       try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
           .from('bible_notices')
           .select('*')
           .eq('id', 1)
@@ -561,23 +561,23 @@
         var team = document.getElementById('uTeam').value.trim();
         if(!team) { showToast("소그룹 명을 입력해주세요!", "warning"); return; }
 
-        const { data: member, error: findErr } = await supabase
+        const { data: members, error: findErr } = await sb
           .from('bible_members')
           .select('*')
           .eq('name', name)
-          .eq('team', team)
-          .maybeSingle();
+          .eq('team', team);
 
-        if(!member) {
+        if(findErr || !members || members.length === 0) {
           showToast("명부에 정보가 없습니다. 이름과 소그룹을 확인하세요.", "error");
           return;
         }
+        var member = members[0];
         if(member.status === '가입완료') {
           showToast("이미 가입되었습니다. 비밀번호를 잊으셨다면 관리자에게 문의하세요.", "error");
           return;
         }
 
-        const { error: updateErr } = await supabase
+        const { error: updateErr } = await sb
           .from('bible_members')
           .update({ password: pw, status: '가입완료' })
           .eq('id', member.id);
@@ -589,15 +589,20 @@
           toggleMode();
         }
       } else {
-        const { data: member, error: loginErr } = await supabase
+        const { data: members, error: loginErr } = await sb
           .from('bible_members')
           .select('*')
           .eq('name', name)
           .eq('password', pw)
-          .eq('status', '가입완료')
-          .maybeSingle();
+          .eq('status', '가입완료');
 
-        if(member) {
+        if(loginErr) {
+          showToast("로그인 오류: " + loginErr.message, "error");
+          return;
+        }
+
+        if(members && members.length > 0) {
+          var member = members[0];
           currentUser = {
             name: member.name,
             team: member.team,
@@ -629,7 +634,7 @@
     async function loadDevotions(containerId) {
       try {
         const todayStr = getTodayString();
-        const { data, error } = await supabase
+        const { data, error } = await sb
           .from('bible_devotions')
           .select('*')
           .eq('date', todayStr)
@@ -688,7 +693,7 @@
         const todayStr = getTodayString();
         // 오늘 날짜의 읽기 로그 조회
         const startOfDay = todayStr + "T00:00:00+09:00";
-        const { data, error } = await supabase
+        const { data, error } = await sb
           .from('bible_read_logs')
           .select('book, chapter, lap')
           .eq('name', userName)
@@ -724,7 +729,7 @@
       var todayStr = getTodayString();
       var readRange = await getTodayReadRangeSummary(currentUser.name);
 
-      const { error } = await supabase
+      const { error } = await sb
         .from('bible_devotions')
         .upsert({
           date: todayStr,
@@ -749,7 +754,7 @@
         return;
       }
       const todayStr = getTodayString();
-      const { data: item } = await supabase
+      const { data: item } = await sb
         .from('bible_devotions')
         .select('likes')
         .eq('date', todayStr)
@@ -767,7 +772,7 @@
         isLikedNow = true;
       }
 
-      const { error } = await supabase
+      const { error } = await sb
         .from('bible_devotions')
         .update({ likes: likes })
         .eq('date', todayStr)
@@ -816,7 +821,7 @@
       if(!currentUser) return;
       document.getElementById('loading-bible').style.display = 'block';
 
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('bible_read_logs')
         .select('book, chapter, lap')
         .eq('name', currentUser.name)
@@ -894,7 +899,7 @@
         el.style.background = 'white'; el.style.color = '#aaa'; el.style.borderColor = '#ddd';
         countEl.innerText = (currentCount - 1) + " / " + limit;
 
-        await supabase
+        await sb
           .from('bible_read_logs')
           .delete()
           .eq('name', currentUser.name)
@@ -937,7 +942,7 @@
             });
           }
 
-          const { error } = await supabase
+          const { error } = await sb
             .from('bible_read_logs')
             .upsert(rowsToAdd, { onConflict: 'name,team,book,chapter,lap' });
 
@@ -970,7 +975,7 @@
     async function loadRanks() {
       // 1. 소그룹 랭킹 조회
       try {
-        const { data: teamData, error: teamErr } = await supabase
+        const { data: teamData, error: teamErr } = await sb
           .from('bible_view_team_rankings')
           .select('*');
         if(!teamErr && teamData) {
@@ -980,7 +985,7 @@
 
       // 2. 개인별 순위 조회
       try {
-        const { data: indivData, error: indivErr } = await supabase
+        const { data: indivData, error: indivErr } = await sb
           .from('bible_view_individual_rankings')
           .select('*');
         if(!indivErr && indivData) {
@@ -1077,7 +1082,7 @@
     }
 
     async function loadAdminNoticeData() {
-      const { data } = await supabase.from('bible_notices').select('*').eq('id', 1).maybeSingle();
+      const { data } = await sb.from('bible_notices').select('*').eq('id', 1).maybeSingle();
       if(data) {
         document.getElementById('admin-notice-status').value = data.status === 'ON' ? 'ON' : 'OFF';
         document.getElementById('admin-notice-title').value = data.title || '';
@@ -1091,7 +1096,7 @@
       var content = document.getElementById('admin-notice-content').innerHTML;
       if(status === 'ON' && !title) { showToast('공지 제목을 입력해주세요.', 'warning'); return; }
 
-      const { error } = await supabase
+      const { error } = await sb
         .from('bible_notices')
         .update({ status: status, title: title, content: content, updated_at: new Date().toISOString() })
         .eq('id', 1);
@@ -1113,7 +1118,7 @@
       
       showConfirm(`[${team}] ${name} 성도님을 새 회원명부에 추가하시겠습니까?`, async function(isOk) {
         if(isOk) {
-          const { error } = await supabase
+          const { error } = await sb
             .from('bible_members')
             .insert([{ name: name, team: team, status: '미가입', role: 'member' }]);
 
@@ -1130,7 +1135,7 @@
     }
 
     async function loadAdminData() {
-      const { data } = await supabase
+      const { data } = await sb
         .from('bible_members')
         .select('*')
         .order('name');
@@ -1161,7 +1166,7 @@
     function resetAccount(name, team) {
       showConfirm(`${name} 님의 비밀번호를 초기화하시겠습니까?`, async function(isOk) {
         if(isOk) {
-          const { error } = await supabase
+          const { error } = await sb
             .from('bible_members')
             .update({ password: null, status: '미가입' })
             .eq('name', name)
